@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "server";
+
+service Cache{
+	rpc GetCache(CacheReqMessage) returns (CacheResMessage);
+	rpc UpdateCache(CacheReqMessage) returns (CacheResMessage);
+}
+
+message CacheReqMessage
+{
+	string Username = 1;
+}
+
+message CacheResMessage
+{
+	bool IsLocked = 1;
+}
