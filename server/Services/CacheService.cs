@@ -48,6 +48,7 @@ namespace server
                 _logger.LogDebug($"GetCache for userName {request.Username}: {ex.Message}", ex.StackTrace);
                 throw;
             }
+
         }
 
         public async override Task<CacheResMessage> UpdateCache(CacheReqMessage request, ServerCallContext context)
