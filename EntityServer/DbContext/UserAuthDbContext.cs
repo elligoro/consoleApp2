@@ -11,6 +11,11 @@ namespace EntityServer
 {
     public class UserAuthDbContext:DbContext
     {
+        public UserAuthDbContext(DbContextOptions<UserAuthDbContext> options) : base(options)
+        {
+            
+        }
+
         public DbSet<UserCreds> UsersCreds{ get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
@@ -26,7 +31,11 @@ namespace EntityServer
                    .IsUnique();
 
             // seed
-            builder.Entity<UserCreds>().HasData(new UserCreds { Username = "simon", Password = CryptoService.HashSHA256("12345donteattheyellowsnow123493")});
+            builder.Entity<UserCreds>().HasData(new UserCreds { Id=1,Username = "simon", Password = CryptoService.HashSHA256("12345donteattheyellowsnow123493")});
+            builder.Entity<UserCreds>().HasData(new UserCreds { Id=2,Username = "lake", Password = CryptoService.HashSHA256("incaroad$guacomoligreen12345") });
+            builder.Entity<UserCreds>().HasData(new UserCreds { Id=3,Username = "palmer", Password = CryptoService.HashSHA256("imightbegoingtom0nta@asoon321432543") });
+            builder.Entity<UserCreds>().HasData(new UserCreds { Id=4,Username = "george", Password = CryptoService.HashSHA256("mrtem0rinem@nplayas0n&tomeeee0192333") });
+            builder.Entity<UserCreds>().HasData(new UserCreds { Id=5, Username = "barak", Password = CryptoService.HashSHA256("evry1234bodyrockoor098432buddddy") });
         }
     }
 
