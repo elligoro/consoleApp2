@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text;
+using System.Collections;
 
 namespace EntityServer.Services
 {
@@ -19,14 +20,25 @@ namespace EntityServer.Services
             var dataBytes = Encoding.UTF8.GetBytes(msg);
             byte[] dataHash = hashAlgorithm.ComputeHash(dataBytes);
 
-            var hexArr = dataHash.Select(b => b.ToString("x2"));
-            return string.Join("", hexArr);
+            return BitConverter.ToString(dataHash).Replace("-","");
         }
-        public static bool VerifyHash(HashAlgorithm hashAlgorithm, string hash, string msg)
+        public static bool VerifyHash(string input, string stored)
         {
-            var hashedMsg = GetHash(hashAlgorithm, msg);
-            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
-            return comparer.Compare(hashedMsg, msg) == 0;
+            input = input.ToLower();
+            var inputBytes = Encoding.UTF8.GetBytes(input);
+            var storedBytes = Encoding.UTF8.GetBytes(stored);
+            return CompareBytes(inputBytes, storedBytes);
+        }
+        private static bool CompareBytes(byte[] buffer1, byte[] buffer2)
+        {
+            var bitArray1 = new BitArray(buffer1);
+            var bitArray2 = new BitArray(buffer2);
+            var res = false;
+            for(var i=0; bitArray1.Length > i; i++)
+            {
+                res |= (bitArray1[i] ^ bitArray2[i]);
+            }
+            return res == false;
         }
     }
 }

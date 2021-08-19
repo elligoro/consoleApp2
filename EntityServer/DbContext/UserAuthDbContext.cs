@@ -17,6 +17,7 @@ namespace EntityServer
         }
 
         public DbSet<UserCreds> UsersCreds{ get; set; }
+        public DbSet<Token> Tokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
@@ -49,5 +50,13 @@ namespace EntityServer
         public string Username { get; set; }
     }
 
+    public class Token
+    {
+        [Key]
+        public Guid Tid { get; set; }
+        public string Sub { get; set; }
+        public DateTime Exp { get; set; }
+        public string Aud { get; set; }
+    }
 
 }

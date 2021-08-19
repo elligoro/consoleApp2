@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
+using EntityServer.Business;
+using EntityServer.Contracts;
+using EntityServer.Persist;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -21,6 +25,14 @@ namespace EntityServer
             Configuration = configuration;
         }
 
+        public void ConfigureContainer(Autofac.ContainerBuilder builder)
+        {
+            // logic
+            builder.RegisterType<AuthLogic>();
+            // persist
+            builder.RegisterType<AuthPersist>().As<IAuthPersist>();
+        }
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -28,8 +40,13 @@ namespace EntityServer
         {
             services.AddControllers();
 
-            services.AddDbContext<UserAuthDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DbConnection")));
+            services.AddDbContext<UserAuthDbContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString("DbConnection"),
+                    builder =>
+                {
+                    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
