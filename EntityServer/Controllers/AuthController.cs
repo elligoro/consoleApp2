@@ -23,12 +23,20 @@ namespace EntityServer.Controllers
             _authLogic = authLogic;
         }
 
-
         [Route("signin")]
-        [HttpGet, AllowAnonymous]
+        [HttpPost, AllowAnonymous]
         public async Task<string> SignIn()
         {
             return await _authLogic.SignIn(HttpContext.Request.Headers["Authorization"][0]);
+
+        }
+
+        [Route("auth-token")]
+        [HttpGet]
+        public async Task<ActionResult<string>> Authenticate()
+        {
+            await _authLogic.TryAuthToken(HttpContext.Request.Headers["Authorization"][0]);
+            return Ok();
         }
     }
 }

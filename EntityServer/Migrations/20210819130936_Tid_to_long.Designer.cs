@@ -4,14 +4,16 @@ using EntityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EntityServer.Migrations
 {
     [DbContext(typeof(UserAuthDbContext))]
-    partial class UserAuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210819130936_Tid_to_long")]
+    partial class Tid_to_long
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

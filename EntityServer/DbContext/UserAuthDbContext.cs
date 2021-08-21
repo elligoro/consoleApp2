@@ -53,10 +53,11 @@ namespace EntityServer
     public class Token
     {
         [Key]
-        public Guid Tid { get; set; }
+        public string Tid { get; set; }
         public string Sub { get; set; }
         public DateTime Exp { get; set; }
         public string Aud { get; set; }
+        public string Attr { get; set; }
     }
 
 }

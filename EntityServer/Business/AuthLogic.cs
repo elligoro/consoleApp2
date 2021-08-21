@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EntityServer.Contracts;
+using EntityServer.Services;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Headers;
-using EntityServer.Contracts;
-using EntityServer.Services;
-using System.Security.Cryptography;
 
 namespace EntityServer.Business
 {
@@ -26,12 +22,52 @@ namespace EntityServer.Business
             if (!await ValidateSignIn(userCreds))
                 throw new Exception($"missing or wrong user creds: status code: {HttpStatusCode.BadRequest}");
 
-            return await GenerateToken();
+            return await GenerateToken(userCreds);
         }
-        private async Task<string> GenerateToken()
+        private async Task<string> GenerateToken(UserCredsModel userCreds)
         {
-            return await Task.FromResult("Token");
 
+            var id = CryptoService.GetRandomCryptoString();
+            var hashedId = CryptoService.HashSHA256(id);
+            var sub = userCreds.UserName;
+            var exp = DateTime.UtcNow.AddMinutes(10);
+            var tokenModel = new TokenPayloadModel { 
+                Tid = hashedId,
+                Sub = sub,
+                Exp = exp
+            };
+            try
+            {
+                await _authPersist.GenerateToken(tokenModel);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"problem with saving token: {JsonConvert.SerializeObject(tokenModel)}. ex: {ex.Message}");
+            }
+
+            return id;
+        }
+
+        public async Task TryAuthToken(string token)
+        {
+            if (token.IndexOf("Bearer ") < 0)
+                throw new Exception($"bad credentials. status: {HttpStatusCode.BadRequest}");
+
+            var tokenId = token.Substring("Bearer ".Length);
+            if (string.IsNullOrEmpty(tokenId))
+                throw new Exception($"token not found: status {HttpStatusCode.NotFound}");
+
+            var tokenIdHash = CryptoService.HashSHA256(tokenId);
+
+            var tokenModel = await _authPersist.TryGetToken(tokenIdHash);
+            if(tokenModel is null)
+                throw new Exception($"Token does not exist. status: {HttpStatusCode.Unauthorized}");
+
+            if (tokenModel.Exp < DateTime.UtcNow)
+            {
+                await _authPersist.RevokeToken(tokenIdHash);
+                throw new Exception($"Token has expired. status: {HttpStatusCode.Unauthorized}");
+            }
         }
 
         private UserCredsModel GetUserCredModel(string auth)

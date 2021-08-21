@@ -10,12 +10,23 @@ namespace EntityServer.Services
 {
     public static class CryptoService
     {
+
+        public static string GetRandomCryptoString()
+        {
+            var buffer = new byte[20];
+            using (RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider())
+            {               
+                rngCsp.GetBytes(buffer);
+            }
+            return Convert.ToBase64String(buffer);
+        }
+
         public static string HashSHA256(string msg)
         {
             using(var hash256 = SHA256.Create())
             return GetHash(hash256,msg);
         } 
-        public static string GetHash(HashAlgorithm hashAlgorithm, string msg)
+        private static string GetHash(HashAlgorithm hashAlgorithm, string msg)
         {
             var dataBytes = Encoding.UTF8.GetBytes(msg);
             byte[] dataHash = hashAlgorithm.ComputeHash(dataBytes);
@@ -24,6 +35,7 @@ namespace EntityServer.Services
         }
         public static bool VerifyHash(string input, string stored)
         {
+            stored = stored.ToLower();
             input = input.ToLower();
             var inputBytes = Encoding.UTF8.GetBytes(input);
             var storedBytes = Encoding.UTF8.GetBytes(stored);

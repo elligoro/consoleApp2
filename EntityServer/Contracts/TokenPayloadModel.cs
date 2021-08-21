@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 
 namespace EntityServer.Contracts
 {
-    public class TokenModel
+    public class TokenPayloadModel
     {
-        public Guid Tid { get; set; }
+        public string Tid { get; set; }
         public string Sub { get; set; }
-        public string Exp { get; set; }
+        public DateTime Exp { get; set; }
         public string Aud { get; set; }
+        public Dictionary<string, string> Attr { get; set; }
     }
 }
