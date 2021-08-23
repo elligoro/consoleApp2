@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using client.Business;
 using client.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,12 +26,20 @@ namespace client
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var httpClientConfigName = Configuration.GetValue<string>("EntityClientConfig:Name");
+            var httpClientConfigUri = Configuration.GetValue<string>("EntityClientConfig:URI");
+
             services.AddControllersWithViews();
+            services.AddHttpClient(httpClientConfigName, (options) => {
+                options.BaseAddress = new Uri(httpClientConfigUri);
+            });
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            builder.RegisterInstance<CacheClient>(new CacheClient());
+            builder.RegisterType<CacheClient>();
+            builder.RegisterType<AuthLogic>();
+            builder.RegisterType<EntityServerClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

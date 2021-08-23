@@ -18,7 +18,14 @@ namespace EntityServer.Persist
         }
         public async Task<UserCreds> ValidateSignIn(string userName)
         {
-            return await _context.UsersCreds.Where(uc => uc.Username == userName).FirstAsync();
+            try
+            {
+                return await _context.UsersCreds.Where(uc => uc.Username == userName).FirstOrDefaultAsync();
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("SQL connection error");
+            }
         }
         public async Task GenerateToken(TokenPayloadModel tokenModel)
         {

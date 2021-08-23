@@ -97,7 +97,7 @@ namespace EntityServer.Business
 
 
             var credsDb = await _authPersist.ValidateSignIn(userCreds.UserName);
-            if (userCreds is null)
+            if (credsDb is null)
                 throw new Exception($"userName or password do not match: {HttpStatusCode.NotFound}");
 
             return CryptoService.VerifyHash(CryptoService.HashSHA256(userCreds.Password), credsDb.Password);
