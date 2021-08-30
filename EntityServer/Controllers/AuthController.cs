@@ -27,8 +27,8 @@ namespace EntityServer.Controllers
         [HttpPost, AllowAnonymous]
         public async Task<string> SignIn()
         {
-            return await _authLogic.SignIn(HttpContext.Request.Headers["Authorization"][0]);
-
+            var res = await _authLogic.SignIn(HttpContext.Request.Headers["Authorization"][0]);
+            return res;
         }
 
         [Route("auth-token")]

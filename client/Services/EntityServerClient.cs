@@ -7,6 +7,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
+using Logic.Contracts;
+using Newtonsoft.Json;
 
 namespace client.Services
 {
@@ -29,17 +31,27 @@ namespace client.Services
             AuthResponse authRes = new AuthResponse();
             try
             {
-                var client = _httpClient.CreateClient(_httpClientConfigName);
-                var request = new HttpRequestMessage(HttpMethod.Post, _httpClientConfigUri);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authReq.PayLoad);
-                var res = (await client.PostAsync(request.RequestUri, request.Content)).Content.ReadAsStringAsync();
-                authRes.Token = res.Result;
+                var res = await HandleHttpClientResponse(HttpMethod.Post, new AuthenticationHeaderValue("Basic", authReq.PayLoad));
+                authRes.Token = res;
             }
             catch(Exception ex)
             {
                 throw;
             }
             return authRes;
+        }
+        public async Task<string> HandleHttpClientResponse(HttpMethod httpMethod, AuthenticationHeaderValue auth = null)
+        {
+            var client = _httpClient.CreateClient(_httpClientConfigName);
+            var request = new HttpRequestMessage(httpMethod, _httpClientConfigUri);
+            client.DefaultRequestHeaders.Authorization = auth;
+            var res = (await client.SendAsync(request)).Content.ReadAsStringAsync();
+
+            var model = JsonConvert.DeserializeObject<ApiResponse>(res.Result);
+            if (!model.IsSuccess)
+                throw new Exception($"{model.StatusCode}");
+
+            return model.DataModel;
         }
     }
 

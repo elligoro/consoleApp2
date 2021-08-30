@@ -1,5 +1,6 @@
 ﻿using EntityServer.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,11 @@ namespace EntityServer.Persist
     public class AuthPersist: IAuthPersist
     {
         private readonly UserAuthDbContext _context;
-
-        public AuthPersist(UserAuthDbContext context)
+        private readonly ILogger<AuthPersist> _logger;
+        public AuthPersist(UserAuthDbContext context, ILogger<AuthPersist> logger)
         {
             _context = context;
+            _logger = logger;
         }
         public async Task<UserCreds> ValidateSignIn(string userName)
         {
@@ -22,9 +24,10 @@ namespace EntityServer.Persist
             {
                 return await _context.UsersCreds.Where(uc => uc.Username == userName).FirstOrDefaultAsync();
             }
-            catch(Exception ex)
+            catch(IndexOutOfRangeException ex)
             {
-                throw new Exception("SQL connection error");
+                _logger.LogError($"sql call failure", ex.Message);
+                throw;
             }
         }
         public async Task GenerateToken(TokenPayloadModel tokenModel)

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using client.Business;
+using client.infra;
 using client.Services;
+using Logic.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -33,6 +35,8 @@ namespace client
             services.AddHttpClient(httpClientConfigName, (options) => {
                 options.BaseAddress = new Uri(httpClientConfigUri);
             });
+
+            services.AddScoped<ApiResponseFilter>();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -45,6 +49,9 @@ namespace client
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
+            app.ConfigureResponseModelMiddleware();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

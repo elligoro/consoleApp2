@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infra\" />
+    <ProjectReference Include="..\Logic\Logic.csproj" />
   </ItemGroup>
 
 

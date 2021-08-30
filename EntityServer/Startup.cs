@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Autofac;
 using EntityServer.Business;
 using EntityServer.Contracts;
+using EntityServer.Infra.Extensions;
 using EntityServer.Persist;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -54,8 +55,15 @@ namespace EntityServer
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
+                app.UseStatusCodePagesWithReExecute("/api/error/{0}");
             }
+
+            //app.ConfigureExceptionsMiddleware();
+
+            //app.ConfigureCustomExceptionsMiddleware();
+
+            app.ConfigureTestExceptionMiddleware();
 
             app.UseHttpsRedirection();
 

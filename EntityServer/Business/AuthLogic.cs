@@ -95,7 +95,6 @@ namespace EntityServer.Business
         private async Task<bool> ValidateSignIn(UserCredsModel userCreds)
         {
 
-
             var credsDb = await _authPersist.ValidateSignIn(userCreds.UserName);
             if (credsDb is null)
                 throw new Exception($"userName or password do not match: {HttpStatusCode.NotFound}");
