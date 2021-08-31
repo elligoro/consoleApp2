@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Primitives;
+using Logic.Contracts;
 
 namespace EntityServer.Controllers
 {
@@ -25,7 +26,7 @@ namespace EntityServer.Controllers
 
         [Route("signin")]
         [HttpPost, AllowAnonymous]
-        public async Task<string> SignIn()
+        public async Task<ApiResponse> SignIn()
         {
             var res = await _authLogic.SignIn(HttpContext.Request.Headers["Authorization"][0]);
             return res;

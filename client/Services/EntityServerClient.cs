@@ -25,13 +25,13 @@ namespace client.Services
             _httpClientConfigName = _config.GetValue<string>("EntityClientConfig:Name");
             _httpClientConfigUri = _config.GetValue<string>("EntityClientConfig:URI");
         }
-        public async Task<AuthResponse> TryAuthenticate(AuthResquest authReq)
+        public async Task<Contracts.AuthResponse> TryAuthenticate(Contracts.AuthResquest authReq)
         {
             // https://www.youtube.com/watch?v=cwgck1k0YKU 
-            AuthResponse authRes = new AuthResponse();
+            Contracts.AuthResponse authRes = new Contracts.AuthResponse();
             try
             {
-                var res = await HandleHttpClientResponse(HttpMethod.Post, new AuthenticationHeaderValue("Basic", authReq.PayLoad));
+                var res = await HandleHttpClientCall(HttpMethod.Post, new AuthenticationHeaderValue("Basic", authReq.PayLoad));
                 authRes.Token = res;
             }
             catch(Exception ex)
@@ -40,7 +40,7 @@ namespace client.Services
             }
             return authRes;
         }
-        public async Task<string> HandleHttpClientResponse(HttpMethod httpMethod, AuthenticationHeaderValue auth = null)
+        public async Task<string> HandleHttpClientCall(HttpMethod httpMethod, AuthenticationHeaderValue auth = null)
         {
             var client = _httpClient.CreateClient(_httpClientConfigName);
             var request = new HttpRequestMessage(httpMethod, _httpClientConfigUri);

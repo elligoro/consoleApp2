@@ -1,5 +1,6 @@
 ﻿using EntityServer.Contracts;
 using EntityServer.Services;
+using Logic.Infra;
 using Newtonsoft.Json;
 using System;
 using System.Net;
@@ -16,13 +17,14 @@ namespace EntityServer.Business
             _authPersist = authPersist;
         }
 
-        public async Task<string> SignIn(string auth)
+        public async Task<Logic.Contracts.ApiResponse> SignIn(string auth)
         {
             var userCreds = GetUserCredModel(auth);
             if (!await ValidateSignIn(userCreds))
-                throw new Exception($"missing or wrong user creds: status code: {HttpStatusCode.BadRequest}");
+                throw new HttpResponseException(HttpStatusCode.BadRequest, "bad user credentials");
 
-            return await GenerateToken(userCreds);
+            var token =  await GenerateToken(userCreds);
+            return new Logic.Contracts.ApiResponse(true, 200, token);
         }
         private async Task<string> GenerateToken(UserCredsModel userCreds)
         {

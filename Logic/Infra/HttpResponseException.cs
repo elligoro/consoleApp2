@@ -10,12 +10,13 @@ namespace Logic.Infra
     public class HttpResponseException : Exception
     {
 
-        public HttpResponseException(HttpStatusCode statusCode, string description)
+        public HttpResponseException(HttpStatusCode statusCode, string description, object value = null)
         {
             StatusCode = statusCode;
             Description = description;
+            Value = value;
         }
-        public HttpStatusCode StatusCode = HttpStatusCode.InternalServerError;
+        public HttpStatusCode StatusCode { get;} = HttpStatusCode.InternalServerError;
         public string Description { get; set; }
         public object Value { get; set; }
     }

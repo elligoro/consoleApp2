@@ -1,11 +1,16 @@
 ﻿using client.Contracts;
 using client.Services;
+using HttpClinet;
+using Logic.Contracts;
+using Logic.Infra;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,14 +19,14 @@ namespace client.Business
     public class AuthLogic
     {
         private readonly CacheClient _cacheClient;
-        private readonly EntityServerClient _httpClientService;
+        private readonly HttpClinetHandler _httpClientService;
 
-        public AuthLogic(CacheClient cacheClient, EntityServerClient httpClientService)
+        public AuthLogic(CacheClient cacheClient, HttpClinetHandler httpClientService)
         {
             _cacheClient = cacheClient;
             _httpClientService = httpClientService;
         }
-        public async Task<string> TryAuthenticate(HttpRequest req, HttpResponse res)
+        public async Task<ApiResponse> TryAuthenticate(HttpRequest req, HttpResponse res)
         {
             string token = string.Empty;
             var authHeader = req.Headers["Authorization"][0];
@@ -51,15 +56,24 @@ namespace client.Business
             }
             
 
-            AuthResquest request = new AuthResquest
+            var request = new Logic.Contracts.AuthResquest
             {
                 PayLoad = credsEnc
             };
-
-            // if not locked: try to authenticate with entity server
-            token = (await _httpClientService.TryAuthenticate(request)).Token;
-
-            return token;
+            try
+            {
+                // if not locked: try to authenticate with entity server
+                token = (await _httpClientService.TryAuthenticate(new AuthenticationHeaderValue("Basic", request.PayLoad))).Token;
+            }
+            catch(HttpResponseException ex)
+            {
+                return new ApiResponse(false, (int)ex.StatusCode,ex.Description);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            return new ApiResponse(true, (int)HttpStatusCode.OK, token);
         }
     }
 }

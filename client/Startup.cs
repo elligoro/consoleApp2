@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Autofac.Core;
 using client.Business;
 using client.infra;
 using client.Services;
+using HttpClinet;
 using Logic.Filters;
+using Logic.Infra;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,6 +42,7 @@ namespace client
             });
 
             services.AddScoped<ApiResponseFilter>();
+           // services.AddSingleton<IActionResultExecutor<ObjectResult>,ResponseEnvelopResultExecutor>();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -44,6 +50,15 @@ namespace client
             builder.RegisterType<CacheClient>();
             builder.RegisterType<AuthLogic>();
             builder.RegisterType<EntityServerClient>();
+            builder.RegisterType<HttpClinetHandler>().InstancePerLifetimeScope()
+                .WithParameters(new List<ResolvedParameter> { 
+                    new ResolvedParameter(
+                        (pi,ctx)=>pi.ParameterType == typeof(string) && pi.Name == "name",
+                        (pi,ctx)=> Configuration.GetValue<string>("EntityClientConfig:Name")),
+                    new ResolvedParameter(
+                        (pi,ctx)=> pi.ParameterType == typeof(string) && pi.Name == "uri",
+                        (pi, ctx)=> Configuration.GetValue<string>("EntityClientConfig:URI"))
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
