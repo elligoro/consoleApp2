@@ -7,6 +7,7 @@ using EntityServer.Business;
 using EntityServer.Contracts;
 using EntityServer.Infra.Extensions;
 using EntityServer.Persist;
+using EntityServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -32,6 +33,8 @@ namespace EntityServer
             builder.RegisterType<AuthLogic>();
             // persist
             builder.RegisterType<AuthPersist>().As<IAuthPersist>();
+            // token store
+            builder.RegisterType<TokenService>().InstancePerLifetimeScope().As<ITokenService>();
         }
 
         public IConfiguration Configuration { get; }
