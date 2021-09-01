@@ -28,16 +28,15 @@ namespace EntityServer.Controllers
         [HttpPost, AllowAnonymous]
         public async Task<ApiResponse> SignIn()
         {
-            var res = await _authLogic.SignIn(HttpContext.Request.Headers["Authorization"][0]);
+            var res = await _authLogic.SignIn(HttpContext.Request.Headers["Authorization"][0], HttpContext.Request.Headers["x-iss"][0]);
             return res;
         }
 
         [Route("auth-token")]
         [HttpGet]
-        public async Task<ActionResult<string>> Authenticate()
+        public async Task<Logic.Contracts.ApiResponse> Authenticate()
         {
-            await _authLogic.TryAuthToken(HttpContext.Request.Headers["Authorization"][0]);
-            return Ok();
+            return await _authLogic.TryAuthToken(HttpContext.Request.Headers["Authorization"][0], HttpContext.Request.Headers["x-iss"][0]);
         }
     }
 }

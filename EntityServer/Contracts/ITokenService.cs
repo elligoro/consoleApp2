@@ -7,7 +7,7 @@ namespace EntityServer.Contracts
 {
     public interface ITokenService
     {
-        Task<string> GenerateToken(UserCredsModel userCreds);
-        Task TryAuthToken(string token);
+        Task<string> GenerateToken(UserCredsModel userCreds, string apiName);
+        Task TryAuthToken(string token, string apiName);
     }
 }

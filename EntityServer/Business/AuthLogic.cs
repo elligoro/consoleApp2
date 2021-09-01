@@ -19,19 +19,21 @@ namespace EntityServer.Business
             _authPersist = authPersist;
         }
 
-        public async Task<Logic.Contracts.ApiResponse> SignIn(string auth)
+        public async Task<Logic.Contracts.ApiResponse> SignIn(string auth, string iss)
         {
             var userCreds = GetUserCredModel(auth);
             if (!await ValidateSignIn(userCreds))
                 throw new HttpResponseException(HttpStatusCode.BadRequest, "bad user credentials");
 
-            var token = await _tokenService.GenerateToken(userCreds);
+
+            var token = await _tokenService.GenerateToken(userCreds, iss);
             return new Logic.Contracts.ApiResponse(true, 200, token);
         }
 
-        public async Task TryAuthToken(string token)
+        public async Task<Logic.Contracts.ApiResponse> TryAuthToken(string token, string iss)
         {
-            await _tokenService.TryAuthToken(token);
+            await _tokenService.TryAuthToken(token, iss);
+            return new Logic.Contracts.ApiResponse(true, 200, "");
         }
 
         private UserCredsModel GetUserCredModel(string auth)

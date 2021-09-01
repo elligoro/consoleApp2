@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Text;
 using System.Collections;
 
@@ -52,5 +53,13 @@ namespace EntityServer.Services
             }
             return res == false;
         }
+
+        public static string ApplyHmac(string token, string salt) => Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                                                                                                                  password: token,
+                                                                                                                  salt: Convert.FromBase64String(salt),
+                                                                                                                  prf: KeyDerivationPrf.HMACSHA256,
+                                                                                                                  iterationCount: 100000,
+                                                                                                                  numBytesRequested: 256/8
+                                                                                                                ));
     }
 }

@@ -24,13 +24,13 @@ namespace HttpClinet
             _name = name;
             _uri = uri;
         }
-        public async Task<AuthResponse> TryAuthenticate(AuthenticationHeaderValue auth = null)
+        public async Task<AuthResponse> TryAuthenticate(string iss, AuthenticationHeaderValue auth = null)
         {
             // https://www.youtube.com/watch?v=cwgck1k0YKU 
             AuthResponse authRes = new AuthResponse();
             try
             {
-                var res = await HandleHttpClientCall(HttpMethod.Post, auth);
+                var res = await HandleHttpClientCall(HttpMethod.Post, iss,"signin", auth);
                 authRes.Token = res;
             }
             catch (Exception ex)
@@ -40,11 +40,26 @@ namespace HttpClinet
             }
             return authRes;
         }
-        private async Task<string> HandleHttpClientCall(HttpMethod httpMethod, AuthenticationHeaderValue auth = null)
+
+        public async Task TryValidateToken(string iss, AuthenticationHeaderValue auth = null)
+        {
+            AuthResponse authRes = new AuthResponse();
+            try
+            {
+                var res = await HandleHttpClientCall(HttpMethod.Get, iss, "auth-token", auth);
+            }
+            catch (Exception ex)
+            {
+                var res = JsonConvert.DeserializeObject<ApiResponse>(ex.Message);
+                throw new HttpResponseException((HttpStatusCode)res.StatusCode, res.DataModel);
+            }
+        }
+        private async Task<string> HandleHttpClientCall(HttpMethod httpMethod, string iss ,string path, AuthenticationHeaderValue auth = null)
         {
             var client = _httpClient.CreateClient(_name);
-            var request = new HttpRequestMessage(httpMethod, _uri);
+            var request = new HttpRequestMessage(httpMethod, _uri + path);
             request.Headers.Authorization = auth;
+            request.Headers.Add("x-iss",iss);
             var res = (await client.SendAsync(request)).Content.ReadAsStringAsync();
             var model = MapResponseContent(res.Result);
             return model;

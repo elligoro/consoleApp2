@@ -5,6 +5,7 @@ using Logic.Contracts;
 using Logic.Infra;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -20,21 +21,24 @@ namespace client.Business
     {
         private readonly CacheClient _cacheClient;
         private readonly HttpClinetHandler _httpClientService;
+        private readonly IConfiguration _config;
 
-        public AuthLogic(CacheClient cacheClient, HttpClinetHandler httpClientService)
+        public AuthLogic(CacheClient cacheClient, HttpClinetHandler httpClientService, IConfiguration config)
         {
             _cacheClient = cacheClient;
             _httpClientService = httpClientService;
+            _config = config;
         }
         public async Task<ApiResponse> TryAuthenticate(HttpRequest req, HttpResponse res)
         {
             string token = string.Empty;
+            var iss = _config.GetValue<string>("EntityClientConfig:Iss");
             var authHeader = req.Headers["Authorization"][0];
             var basicAuthTypeStr = "Basic "; 
             if(string.IsNullOrEmpty(authHeader)
                || (authHeader.IndexOf(basicAuthTypeStr) < 0))
             {
-                res.StatusCode = (int)HttpStatusCode.Forbidden;
+                throw new HttpResponseException(HttpStatusCode.Unauthorized, "bad credentials");
             }
                
             var credsEnc = authHeader.Substring(basicAuthTypeStr.Length);
@@ -42,7 +46,7 @@ namespace client.Business
             var credsArr = creds.Split(":");
 
             if (string.IsNullOrEmpty(creds) || credsArr.Length != 2) {
-                res.StatusCode = (int)HttpStatusCode.Forbidden;
+                throw new HttpResponseException(HttpStatusCode.Unauthorized, "bad credentials");
             }
 
             var userName = credsArr[0];
@@ -63,7 +67,7 @@ namespace client.Business
             try
             {
                 // if not locked: try to authenticate with entity server
-                token = (await _httpClientService.TryAuthenticate(new AuthenticationHeaderValue("Basic", request.PayLoad))).Token;
+                token = (await _httpClientService.TryAuthenticate(iss, new AuthenticationHeaderValue("Basic", request.PayLoad))).Token;
             }
             catch(HttpResponseException ex)
             {
@@ -74,6 +78,36 @@ namespace client.Business
                 throw;
             }
             return new ApiResponse(true, (int)HttpStatusCode.OK, token);
+        }
+
+        public async Task<ApiResponse> TryValidateToken(HttpRequest req, HttpResponse res)
+        {
+            var auth = req.Headers["Authorization"][0];
+            var iss = req.Headers["x-iss"][0];
+
+            var token = auth.Substring("Bearer ".Length);
+
+            if(token.Split(".").Length < 2 || string.IsNullOrEmpty(iss))
+                throw new HttpResponseException(HttpStatusCode.Unauthorized, "bad credentials");
+
+            var request = new Logic.Contracts.AuthResquest
+            {
+                PayLoad = token
+            };
+
+            try
+            {
+                await _httpClientService.TryValidateToken(iss, new AuthenticationHeaderValue("Bearer", request.PayLoad));
+            }
+            catch (HttpResponseException ex)
+            {
+                return new ApiResponse(false, (int)ex.StatusCode, ex.Description);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            return new ApiResponse(true, (int)HttpStatusCode.OK, "Token Validated");
         }
     }
 }

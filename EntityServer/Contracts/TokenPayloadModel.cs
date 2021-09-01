@@ -11,6 +11,7 @@ namespace EntityServer.Contracts
         public string Sub { get; set; }
         public DateTime Exp { get; set; }
         public string Aud { get; set; }
+        public string Iss { get; set; }
         public Dictionary<string, string> Attr { get; set; }
     }
 }

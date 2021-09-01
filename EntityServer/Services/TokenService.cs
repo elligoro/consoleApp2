@@ -17,7 +17,7 @@ namespace EntityServer.Services
         }
 
 
-        public async Task<string> GenerateToken(UserCredsModel userCreds)
+        public async Task<string> GenerateToken(UserCredsModel userCreds, string apiName)
         {
 
             var id = CryptoService.GetRandomCryptoString();
@@ -28,14 +28,15 @@ namespace EntityServer.Services
             {
                 Tid = hashedId,
                 Sub = sub,
-                Exp = exp
+                Exp = exp,
+                Iss = apiName
             };
             await _authPersist.GenerateToken(tokenModel);
 
             return id;
         }
 
-        public async Task TryAuthToken(string token)
+        public async Task TryAuthToken(string token, string apiName)
         {
             if (token.IndexOf("Bearer ") < 0)
                 throw new Exception($"bad credentials. status: {HttpStatusCode.BadRequest}");

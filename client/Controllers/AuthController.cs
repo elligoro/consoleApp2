@@ -30,5 +30,12 @@ namespace client.Controllers
         {
             return await _authLogic.TryAuthenticate(HttpContext.Request, HttpContext.Response);
         }
+
+        [Route("validate-user")]
+        [HttpGet]
+        public async Task<ApiResponse> TryValidateToken()
+        {
+            return await _authLogic.TryValidateToken(HttpContext.Request, HttpContext.Response);
+        }
     }
 }
