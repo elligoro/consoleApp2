@@ -30,12 +30,16 @@ namespace EntityServer
         public void ConfigureContainer(Autofac.ContainerBuilder builder)
         {
             // logic
-            builder.RegisterType<AuthLogic>().InstancePerLifetimeScope();
-            // persist
-            builder.RegisterType<AuthPersist>().As<IAuthPersist>().InstancePerLifetimeScope();
-            // token store
+            builder.RegisterType<AuthLogic>();
+
+            // base token service
+            builder.RegisterType<TokenService>();
+            builder.RegisterType<JsonTokenService>();
+
             builder.RegisterType<HmacTokenService>().As<ITokenService>().InstancePerLifetimeScope();
-            builder.RegisterType<TokenService>().InstancePerLifetimeScope();
+
+            // persist
+            builder.RegisterType<AuthPersist>().As<IAuthPersist>();
         }
 
         public IConfiguration Configuration { get; }

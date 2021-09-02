@@ -13,9 +13,9 @@ namespace EntityServer.Services
     public class HmacTokenService : ITokenService
     {
         private readonly IAuthPersist _authPersist;
-        private readonly TokenService _tokenService;
+        private readonly JsonTokenService _tokenService;
         private readonly IConfiguration _config;
-        public HmacTokenService(IAuthPersist authPersist, TokenService tokenService, IConfiguration config)
+        public HmacTokenService(IAuthPersist authPersist, JsonTokenService tokenService, IConfiguration config)
         {
             _authPersist = authPersist;
             _tokenService = tokenService;
@@ -28,7 +28,7 @@ namespace EntityServer.Services
                 throw new Exception("basic error has accoured");
 
             var tokenId = await _tokenService.GenerateToken(userCreds, apiName);
-            var tag = CryptoService.ApplyHmac(tokenId, apiConfig.Salt);
+            var tag = Convert.ToBase64String(Logic.Services.CryptoService.ApplyHmac(tokenId, apiConfig.Salt));
 
             return tokenId + "." + tag;
 
@@ -48,7 +48,7 @@ namespace EntityServer.Services
             var tokenArr = token.Split(".");
             var tokenId = tokenArr[0];
             var hmacTag = tokenArr[1];
-            var tag = CryptoService.ApplyHmac(tokenId.Substring("Bearer ".Length), apiConfig.Salt);
+            var tag = Convert.ToBase64String(Logic.Services.CryptoService.ApplyHmac(tokenId.Substring("Bearer ".Length), apiConfig.Salt));
             var isCompare = CryptoService.VerifyHash(tag, hmacTag);
 
             if(!isCompare)

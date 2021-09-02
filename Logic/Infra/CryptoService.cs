@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Text;
 using System.Collections;
 
-namespace EntityServer.Services
+namespace Logic.Services
 {
     public static class CryptoService
     {
@@ -51,6 +52,16 @@ namespace EntityServer.Services
                 res |= (bitArray1[i] ^ bitArray2[i]);
             }
             return res == false;
+        }
+        public static byte[] ApplyHmac(string tokenId, string salt)
+        {
+            return KeyDerivation.Pbkdf2(
+                                        password:tokenId,
+                                        salt: Encoding.UTF8.GetBytes(salt),
+                                        prf: KeyDerivationPrf.HMACSHA256,
+                                        iterationCount: 100000,
+                                        numBytesRequested: 256 / 8
+                                        );
         }
     }
 }

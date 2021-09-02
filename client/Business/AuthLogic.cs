@@ -87,8 +87,8 @@ namespace client.Business
 
             var token = auth.Substring("Bearer ".Length);
 
-            if(token.Split(".").Length < 2 || string.IsNullOrEmpty(iss))
-                throw new HttpResponseException(HttpStatusCode.Unauthorized, "bad credentials");
+            //if(token.Split(".").Length < 2 || string.IsNullOrEmpty(iss))
+            //    throw new HttpResponseException(HttpStatusCode.Unauthorized, "bad credentials");
 
             var request = new Logic.Contracts.AuthResquest
             {
