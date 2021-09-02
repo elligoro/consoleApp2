@@ -16,27 +16,25 @@ namespace EntityServer.Services
             _authPersist = authPersist;
         }
 
+        public string GenerateRandomTokenId() => CryptoService.HashSHA256(CryptoService.GetRandomCryptoString());
 
         public async Task<string> GenerateToken(UserCredsModel userCreds, string apiName)
         {
-
-            var id = CryptoService.GetRandomCryptoString();
-            var hashedId = CryptoService.HashSHA256(id);
             var sub = userCreds.UserName;
             var exp = DateTime.UtcNow.AddMinutes(10);
             var tokenModel = new TokenPayloadModel
             {
-                Tid = hashedId,
+                Tid = GenerateRandomTokenId(),
                 Sub = sub,
                 Exp = exp,
                 Iss = apiName
             };
             await _authPersist.GenerateToken(tokenModel);
 
-            return id;
+            return tokenModel.Tid;
         }
 
-        public async Task TryAuthToken(string token, string apiName)
+        public void ValidateAuthHeader(string token)
         {
             if (token.IndexOf("Bearer ") < 0)
                 throw new Exception($"bad credentials. status: {HttpStatusCode.BadRequest}");
@@ -44,8 +42,13 @@ namespace EntityServer.Services
             var tokenId = token.Substring("Bearer ".Length);
             if (string.IsNullOrEmpty(tokenId))
                 throw new Exception($"token not found: status {HttpStatusCode.NotFound}");
+        }
 
-            var tokenIdHash = CryptoService.HashSHA256(tokenId);
+        public async Task TryAuthToken(string token, string apiName)
+        {
+            ValidateAuthHeader(token);
+
+            var tokenIdHash = CryptoService.HashSHA256(token.Substring("Bearer ".Length));
 
             var tokenModel = await _authPersist.TryGetToken(tokenIdHash);
             if (tokenModel is null)

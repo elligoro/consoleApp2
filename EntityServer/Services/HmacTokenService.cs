@@ -32,7 +32,6 @@ namespace EntityServer.Services
 
             return tokenId + "." + tag;
 
-            //2WlngGvsIvfrTS8dJ0lLw3eT59c=.Pe1xeeW1HFuiZkYrKSUoeme7ByNMPn/21sH0A3NZqHc=
         }
 
         public async Task TryAuthToken(string token, string apiName)
